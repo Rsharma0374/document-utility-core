@@ -88,6 +88,7 @@ public class HomeController {
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION,
                             "attachment; filename=\"" + downloadFilename + "\"")
+                    .header("Access-Control-Expose-Headers", "Content-Disposition")
                     .contentType(MediaType.APPLICATION_PDF)
                     .contentLength(lockedPdf.length)
                     .body(lockedPdf);
