@@ -44,8 +44,13 @@ public class HomeController {
         try {
 
             byte[] unlockedPdf = pdfService.unlockPdf(file, password);
+            String originalFilename = file.getOriginalFilename();
+            String downloadFilename = originalFilename != null ?
+                    "unlocked_" + originalFilename : "unlocked.pdf";
             return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=unlocked.pdf")
+                    .header(HttpHeaders.CONTENT_DISPOSITION,
+                            "attachment; filename=\"" + downloadFilename + "\"")
+                    .header("Access-Control-Expose-Headers", "Content-Disposition")
                     .contentType(MediaType.APPLICATION_PDF)
                     .body(unlockedPdf);
         } catch (InvalidPasswordException e) {
