@@ -19,11 +19,11 @@ public class RateLimiterFilter implements Filter {
 
     private Bandwidth getBandwidthForEndpoint(String endpoint) {
         return switch (endpoint) {
-            case "/pdf/unlock" -> Bandwidth.classic(10, Refill.greedy(10, Duration.ofMinutes(1)));
-            case "/pdf/lock" -> Bandwidth.classic(20, Refill.greedy(20, Duration.ofMinutes(1)));
-            case "/pdf/to-doc" -> Bandwidth.classic(30, Refill.greedy(30, Duration.ofMinutes(1)));
-            case "/doc/to-pdf" -> Bandwidth.classic(50, Refill.greedy(50, Duration.ofMinutes(1)));
-            default -> Bandwidth.classic(100, Refill.greedy(100, Duration.ofMinutes(1)));
+            case "/api/v1/pdf/unlock" -> Bandwidth.classic(5, Refill.greedy(5, Duration.ofMinutes(1)));
+            case "/api/v1/pdf/lock" -> Bandwidth.classic(5, Refill.greedy(5, Duration.ofMinutes(1)));
+            case "/api/v1/pdf/to-doc" -> Bandwidth.classic(5, Refill.greedy(5, Duration.ofMinutes(1)));
+            case "/api/v1/doc/to-pdf" -> Bandwidth.classic(5, Refill.greedy(5, Duration.ofMinutes(1)));
+            default -> Bandwidth.classic(10, Refill.greedy(10, Duration.ofMinutes(1)));
         };
     }
 
