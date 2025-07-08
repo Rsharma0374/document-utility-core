@@ -12,7 +12,9 @@ import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -209,5 +211,233 @@ public class HomeController {
         }
     }
 
+
+    // PDF COMPRESSION
+    @PostMapping("/pdf/compress")
+    public ResponseEntity<?> compressPdf(@RequestParam("file") MultipartFile file,
+                                         @RequestParam(value = "quality", defaultValue = "0.8") float quality) {
+
+        logger.debug("Attempting to compress PDF: {}, quality: {}", file.getOriginalFilename(), quality);
+
+        try {
+            // Validate file
+            if (file.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "File is empty"));
+            }
+
+            if (!FileUtils.isValidPdf(file)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "Invalid PDF file"));
+            }
+
+            // Validate quality parameter
+            if (quality < 0.1f || quality > 1.0f) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "Quality must be between 0.1 and 1.0"));
+            }
+
+            byte[] compressedPdf = pdfService.compressPdf(file, quality);
+
+            // Calculate compression ratio
+            long originalSize = file.getSize();
+            long compressedSize = compressedPdf.length;
+            double compressionRatio = ((double)(originalSize - compressedSize) / originalSize) * 100;
+
+            logger.debug("PDF compression successful. Compression ratio: {:.2f}%", compressionRatio);
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=compressed_" + file.getOriginalFilename())
+                    .header("Access-Control-Expose-Headers", "Content-Disposition")
+                    .header("X-Original-Size", String.valueOf(originalSize))
+                    .header("X-Compressed-Size", String.valueOf(compressedSize))
+                    .header("X-Compression-Ratio", String.format("%.2f", compressionRatio))
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(compressedPdf);
+
+        } catch (IllegalArgumentException e) {
+            logger.error("Invalid parameters for PDF compression: ", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            logger.error("Error while compressing PDF: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to compress PDF"));
+        }
+    }
+
+    // 5. PDF MERGE
+    @PostMapping("/pdf/merge")
+    public ResponseEntity<?> mergePdfs(@RequestParam("files") List<MultipartFile> files) {
+
+        logger.debug("Attempting to merge {} PDF files", files.size());
+
+        try {
+            // Validate files
+            if (files == null || files.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "No files provided"));
+            }
+
+            if (files.size() < 2) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "At least 2 files required for merging"));
+            }
+
+            // Validate each file
+            for (MultipartFile file : files) {
+                if (file.isEmpty()) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body(Map.of("error", "One or more files are empty"));
+                }
+
+                if (!FileUtils.isValidPdf(file)) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body(Map.of("error", "Invalid PDF file: " + file.getOriginalFilename()));
+                }
+            }
+
+            byte[] mergedPdf = pdfService.mergePdfs(files);
+
+            logger.debug("PDF merge successful. Total merged files: {}", files.size());
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=merged_" + System.currentTimeMillis() + ".pdf")
+                    .header("Access-Control-Expose-Headers", "Content-Disposition")
+                    .header("X-Merged-Files-Count", String.valueOf(files.size()))
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(mergedPdf);
+
+        } catch (IllegalArgumentException e) {
+            logger.error("Invalid parameters for PDF merge: ", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            logger.error("Error while merging PDFs: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to merge PDFs"));
+        }
+    }
+
+    // 6. PDF SPLIT
+    @PostMapping("/pdf/split")
+    public ResponseEntity<?> splitPdf(@RequestParam("file") MultipartFile file,
+                                      @RequestParam("pages") String pageRanges) {
+
+        logger.debug("Attempting to split PDF: {}, page ranges: {}", file.getOriginalFilename(), pageRanges);
+
+        try {
+            // Validate file
+            if (file.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "File is empty"));
+            }
+
+            if (!FileUtils.isValidPdf(file)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "Invalid PDF file"));
+            }
+
+            // Validate page ranges
+            if (pageRanges == null || pageRanges.trim().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "Page ranges cannot be empty"));
+            }
+
+            List<byte[]> splitPdfs = pdfService.splitPdf(file, pageRanges);
+
+            if (splitPdfs.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "No pages found for specified ranges"));
+            }
+
+            // Return as ZIP file containing multiple PDFs
+            byte[] zipFile = pdfService.createZipFromPdfs(splitPdfs);
+
+            logger.debug("PDF split successful. Generated {} split files", splitPdfs.size());
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=split_" +
+                            file.getOriginalFilename().replace(".pdf", "") + "_pages.zip")
+                    .header("Access-Control-Expose-Headers", "Content-Disposition")
+                    .header("X-Split-Files-Count", String.valueOf(splitPdfs.size()))
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .body(zipFile);
+
+        } catch (IllegalArgumentException e) {
+            logger.error("Invalid parameters for PDF split: ", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            logger.error("Error while splitting PDF: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to split PDF"));
+        }
+    }
+
+    // 7. PDF TO IMAGE CONVERSION
+    @PostMapping("/pdf/to-images")
+    public ResponseEntity<?> convertPdfToImages(@RequestParam("file") MultipartFile file,
+                                                @RequestParam(value = "format", defaultValue = "PNG") String format,
+                                                @RequestParam(value = "dpi", defaultValue = "300") int dpi) {
+
+        logger.debug("Attempting to convert PDF to images: {}, format: {}, DPI: {}",
+                file.getOriginalFilename(), format, dpi);
+
+        try {
+            // Validate file
+            if (file.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "File is empty"));
+            }
+
+            if (!FileUtils.isValidPdf(file)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "Invalid PDF file"));
+            }
+
+            // Validate format
+            if (!Arrays.asList("PNG", "JPEG", "JPG", "GIF", "BMP").contains(format.toUpperCase())) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "Unsupported image format: " + format));
+            }
+
+            // Validate DPI
+            if (dpi < 72 || dpi > 600) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "DPI must be between 72 and 600"));
+            }
+
+            List<byte[]> images = pdfService.convertPdfToImages(file, format, dpi);
+
+            if (images.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "No pages found in PDF"));
+            }
+
+            byte[] zipFile = pdfService.createZipFromImages(images, format);
+
+            logger.debug("PDF to image conversion successful. Generated {} images", images.size());
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" +
+                            file.getOriginalFilename().replace(".pdf", "") + "_images.zip")
+                    .header("Access-Control-Expose-Headers", "Content-Disposition")
+                    .header("X-Images-Count", String.valueOf(images.size()))
+                    .header("X-Image-Format", format.toUpperCase())
+                    .header("X-Image-DPI", String.valueOf(dpi))
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .body(zipFile);
+
+        } catch (IllegalArgumentException e) {
+            logger.error("Invalid parameters for PDF to image conversion: ", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            logger.error("Error while converting PDF to images: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to convert PDF to images"));
+        }
+    }
 
 }
