@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Base64;
 
 @Service
 public class PdfServiceImpl implements PdfService {
@@ -204,5 +205,80 @@ public class PdfServiceImpl implements PdfService {
             }
         }
     }
+
+    /**
+     * Converts a MultipartFile PDF to Base64 string
+     * @param file the MultipartFile containing PDF data
+     * @return Base64 encoded string of the PDF
+     * @throws IOException if file reading fails
+     * @throws IllegalArgumentException if file is null or empty
+     */
+    @Override
+
+    public String convertPdfToBase64(MultipartFile file) throws IOException {
+        if (file == null) {
+            throw new IllegalArgumentException("File cannot be null");
+        }
+
+        if (file.isEmpty()) {
+            throw new IllegalArgumentException("File cannot be empty");
+        }
+
+        try {
+            logger.debug("Converting PDF file '{}' to Base64, size: {} bytes",
+                    file.getOriginalFilename(), file.getSize());
+
+            // Get the file bytes
+            byte[] fileBytes = file.getBytes();
+
+            // Encode to Base64
+            String base64String = Base64.getEncoder().encodeToString(fileBytes);
+
+            logger.debug("Successfully converted PDF to Base64. Original size: {} bytes, Base64 length: {} characters",
+                    fileBytes.length, base64String.length());
+
+            return base64String;
+
+        } catch (IOException e) {
+            logger.error("Failed to read file '{}': {}", file.getOriginalFilename(), e.getMessage());
+            throw new IOException("Failed to read PDF file: " + e.getMessage(), e);
+        } catch (Exception e) {
+            logger.error("Unexpected error while converting PDF '{}' to Base64: {}",
+                    file.getOriginalFilename(), e.getMessage());
+            throw new RuntimeException("Unexpected error during PDF conversion", e);
+        }
+    }
+
+    /**
+     * Converts Base64 string to PDF bytes
+     * @param base64String the Base64 encoded PDF string
+     * @return byte array containing PDF data
+     * @throws IllegalArgumentException if base64String is null, empty, or invalid
+     */
+    public byte[] convertBase64ToPdf(String base64String) {
+        if (base64String == null || base64String.trim().isEmpty()) {
+            throw new IllegalArgumentException("Base64 string cannot be null or empty");
+        }
+
+        try {
+            logger.debug("Converting Base64 string to PDF bytes. Base64 length: {} characters", base64String.length());
+
+            // Decode Base64 string to bytes
+            byte[] pdfBytes = Base64.getDecoder().decode(base64String.trim());
+
+            logger.debug("Successfully converted Base64 to PDF bytes. PDF size: {} bytes", pdfBytes.length);
+
+            return pdfBytes;
+
+        } catch (IllegalArgumentException e) {
+            logger.error("Invalid Base64 string format: {}", e.getMessage());
+            throw new IllegalArgumentException("Invalid Base64 format: " + e.getMessage(), e);
+        } catch (Exception e) {
+            logger.error("Unexpected error while converting Base64 to PDF: {}", e.getMessage());
+            throw new RuntimeException("Unexpected error during Base64 to PDF conversion", e);
+        }
+    }
+
+
 }
 

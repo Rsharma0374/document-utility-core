@@ -65,4 +65,40 @@ public class FileUtils {
             return false;
         }
     }
+
+    /**
+     * Validates if the file size is within acceptable limits for Base64 conversion
+     * @param file the MultipartFile
+     * @param maxSizeInMB maximum allowed size in MB
+     * @return true if file size is acceptable
+     */
+    public static boolean isFileSizeAcceptable(MultipartFile file, int maxSizeInMB) {
+        if (file == null || file.isEmpty()) {
+            return false;
+        }
+
+        long maxSizeInBytes = (long) maxSizeInMB * 1024 * 1024;
+        return file.getSize() <= maxSizeInBytes;
+    }
+
+    /**
+     * Validates if byte array contains valid PDF data
+     * @param bytes the byte array to validate
+     * @return true if bytes form a valid PDF
+     */
+    public static boolean isValidPdfBytes(byte[] bytes) {
+        if (bytes == null || bytes.length < 8) {
+            return false;
+        }
+
+        // Check PDF header signature (%PDF-)
+        String header = new String(bytes, 0, 8);
+        if (!header.startsWith("%PDF-")) {
+            return false;
+        }
+
+        // Check for PDF footer (%%EOF)
+        String content = new String(bytes);
+        return content.contains("%%EOF");
+    }
 }

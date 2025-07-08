@@ -9,4 +9,8 @@ public interface PdfService {
     byte[] unlockPdf(MultipartFile file, String password) throws IOException;
 
     byte[] lockUnlockedPdfStandard(MultipartFile file, String password) throws IOException;
+
+    String convertPdfToBase64(MultipartFile file) throws IOException;
+
+    byte[] convertBase64ToPdf(String base64String);
 }
