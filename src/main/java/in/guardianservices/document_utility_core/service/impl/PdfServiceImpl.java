@@ -1,6 +1,7 @@
 package in.guardianservices.document_utility_core.service.impl;
 
 import in.guardianservices.document_utility_core.exception.InvalidPasswordException;
+import in.guardianservices.document_utility_core.model.PageRange;
 import in.guardianservices.document_utility_core.service.PdfService;
 import in.guardianservices.document_utility_core.utils.FileUtils;
 import org.apache.pdfbox.cos.COSName;
@@ -85,7 +86,7 @@ public class PdfServiceImpl implements PdfService {
                 return file.getBytes();
             }
 
-            // Log current permissions for debugging
+            // Log current permissions for infoging
             if (document.getCurrentAccessPermission() != null) {
                 boolean canModify = document.getCurrentAccessPermission().canModify();
                 boolean canExtract = document.getCurrentAccessPermission().canExtractContent();
@@ -156,7 +157,7 @@ public class PdfServiceImpl implements PdfService {
     public byte[] lockUnlockedPdf(MultipartFile file, String password,
                                   AccessPermission permissions) throws IOException, IllegalStateException {
 
-        logger.debug("Starting PDF lock process for unlocked file: {}", file.getOriginalFilename());
+        logger.info("Starting PDF lock process for unlocked file: {}", file.getOriginalFilename());
 
         // Validate input
         if (file.isEmpty()) {
@@ -174,7 +175,7 @@ public class PdfServiceImpl implements PdfService {
             // Load the unlocked PDF document
             document = PDDocument.load(file.getInputStream());
 
-            logger.debug("Unlocked PDF loaded successfully, applying security settings");
+            logger.info("Unlocked PDF loaded successfully, applying security settings");
 
             // Verify it's truly unlocked
             if (document.isEncrypted()) {
@@ -198,7 +199,7 @@ public class PdfServiceImpl implements PdfService {
             document.save(outputStream);
 
             byte[] lockedPdfBytes = outputStream.toByteArray();
-            logger.debug("PDF successfully locked, output size: {} bytes", lockedPdfBytes.length);
+            logger.info("PDF successfully locked, output size: {} bytes", lockedPdfBytes.length);
 
             return lockedPdfBytes;
 
@@ -245,7 +246,7 @@ public class PdfServiceImpl implements PdfService {
         }
 
         try {
-            logger.debug("Converting PDF file '{}' to Base64, size: {} bytes",
+            logger.info("Converting PDF file '{}' to Base64, size: {} bytes",
                     file.getOriginalFilename(), file.getSize());
 
             // Get the file bytes
@@ -254,7 +255,7 @@ public class PdfServiceImpl implements PdfService {
             // Encode to Base64
             String base64String = Base64.getEncoder().encodeToString(fileBytes);
 
-            logger.debug("Successfully converted PDF to Base64. Original size: {} bytes, Base64 length: {} characters",
+            logger.info("Successfully converted PDF to Base64. Original size: {} bytes, Base64 length: {} characters",
                     fileBytes.length, base64String.length());
 
             return base64String;
@@ -281,12 +282,12 @@ public class PdfServiceImpl implements PdfService {
         }
 
         try {
-            logger.debug("Converting Base64 string to PDF bytes. Base64 length: {} characters", base64String.length());
+            logger.info("Converting Base64 string to PDF bytes. Base64 length: {} characters", base64String.length());
 
             // Decode Base64 string to bytes
             byte[] pdfBytes = Base64.getDecoder().decode(base64String.trim());
 
-            logger.debug("Successfully converted Base64 to PDF bytes. PDF size: {} bytes", pdfBytes.length);
+            logger.info("Successfully converted Base64 to PDF bytes. PDF size: {} bytes", pdfBytes.length);
 
             return pdfBytes;
 
@@ -307,7 +308,7 @@ public class PdfServiceImpl implements PdfService {
      */
     @Override
     public byte[] compressPdf(MultipartFile file, float quality) throws IOException {
-        logger.debug("Starting PDF compression for file: {}, quality: {}", file.getOriginalFilename(), quality);
+        logger.info("Starting PDF compression for file: {}, quality: {}", file.getOriginalFilename(), quality);
 
         if (quality < 0.1f || quality > 1.0f) {
             throw new IllegalArgumentException("Quality must be between 0.1 and 1.0");
@@ -336,7 +337,7 @@ public class PdfServiceImpl implements PdfService {
             document.save(outputStream);
             byte[] compressedBytes = outputStream.toByteArray();
 
-            logger.debug("PDF compression completed. Original size: {} bytes, Compressed size: {} bytes, Reduction: {}%",
+            logger.info("PDF compression completed. Original size: {} bytes, Compressed size: {} bytes, Reduction: {}%",
                     originalSize, compressedBytes.length,
                     ((originalSize - compressedBytes.length) * 100.0 / originalSize));
 
@@ -345,7 +346,7 @@ public class PdfServiceImpl implements PdfService {
     }
 
     private void compressImagesInDocument(PDDocument document, float quality) throws IOException {
-        logger.debug("Compressing images in document with quality: {}", quality);
+        logger.info("Compressing images in document with quality: {}", quality);
 
         for (PDPage page : document.getPages()) {
             PDResources resources = page.getResources();
@@ -354,8 +355,7 @@ public class PdfServiceImpl implements PdfService {
             for (COSName name : resources.getXObjectNames()) {
                 PDXObject xObject = resources.getXObject(name);
 
-                if (xObject instanceof PDImageXObject) {
-                    PDImageXObject image = (PDImageXObject) xObject;
+                if (xObject instanceof PDImageXObject image) {
 
                     // Get original image
                     BufferedImage bufferedImage = image.getImage();
@@ -418,7 +418,7 @@ public class PdfServiceImpl implements PdfService {
      */
     @Override
     public byte[] mergePdfs(List<MultipartFile> files) throws IOException {
-        logger.debug("Starting PDF merge operation for {} files", files.size());
+        logger.info("Starting PDF merge operation for {} files", files.size());
 
         if (files.isEmpty()) {
             throw new IllegalArgumentException("No files provided for merging");
@@ -448,7 +448,7 @@ public class PdfServiceImpl implements PdfService {
             merger.mergeDocuments(null);
 
             byte[] mergedBytes = outputStream.toByteArray();
-            logger.debug("PDF merge completed. Total pages in merged PDF: estimated from {} files", files.size());
+            logger.info("PDF merge completed. Total pages in merged PDF: estimated from {} files", files.size());
 
             return mergedBytes;
 
@@ -474,13 +474,13 @@ public class PdfServiceImpl implements PdfService {
      * @return list of split PDF byte arrays
      */
     public List<byte[]> splitPdf(MultipartFile file, String pageRanges) throws IOException {
-        logger.debug("Starting PDF split operation for file: {}, page ranges: {}", file.getOriginalFilename(), pageRanges);
+        logger.info("Starting PDF split operation for file: {}, page ranges: {}", file.getOriginalFilename(), pageRanges);
 
         List<byte[]> splitPdfs = new ArrayList<>();
 
         try (PDDocument document = PDDocument.load(file.getInputStream())) {
             int totalPages = document.getNumberOfPages();
-            logger.debug("Total pages in document: {}", totalPages);
+            logger.info("Total pages in document: {}", totalPages);
 
             List<PageRange> ranges = parsePageRanges(pageRanges, totalPages);
 
@@ -496,12 +496,12 @@ public class PdfServiceImpl implements PdfService {
                     splitDocument.save(outputStream);
                     splitPdfs.add(outputStream.toByteArray());
 
-                    logger.debug("Created split PDF for pages {}-{}", range.start, range.end);
+                    logger.info("Created split PDF for pages {}-{}", range.start, range.end);
                 }
             }
         }
 
-        logger.debug("PDF split completed. Created {} split files", splitPdfs.size());
+        logger.info("PDF split completed. Created {} split files", splitPdfs.size());
         return splitPdfs;
     }
 
@@ -533,15 +533,15 @@ public class PdfServiceImpl implements PdfService {
         return ranges;
     }
 
-    private static class PageRange {
-        final int start;
-        final int end;
-
-        PageRange(int start, int end) {
-            this.start = start;
-            this.end = end;
-        }
-    }
+//    private static class PageRange {
+//        final int start;
+//        final int end;
+//
+//        PageRange(int start, int end) {
+//            this.start = start;
+//            this.end = end;
+//        }
+//    }
 
     // PDF TO IMAGE CONVERSION
     /**
@@ -552,7 +552,7 @@ public class PdfServiceImpl implements PdfService {
      * @return list of image byte arrays
      */
     public List<byte[]> convertPdfToImages(MultipartFile file, String format, int dpi) throws IOException {
-        logger.debug("Starting PDF to image conversion for file: {}, format: {}, DPI: {}",
+        logger.info("Starting PDF to image conversion for file: {}, format: {}, DPI: {}",
                 file.getOriginalFilename(), format, dpi);
 
         if (dpi < 72 || dpi > 600) {
@@ -572,12 +572,12 @@ public class PdfServiceImpl implements PdfService {
                     ImageIOUtil.writeImage(image, format.toLowerCase(), outputStream, dpi);
                     images.add(outputStream.toByteArray());
 
-                    logger.debug("Converted page {} to {} image", i + 1, format);
+                    logger.info("Converted page {} to {} image", i + 1, format);
                 }
             }
         }
 
-        logger.debug("PDF to image conversion completed. Generated {} images", images.size());
+        logger.info("PDF to image conversion completed. Generated {} images", images.size());
         return images;
     }
 
@@ -589,7 +589,7 @@ public class PdfServiceImpl implements PdfService {
      * @return ZIP file as byte array
      */
     public byte[] createZipFromPdfs(List<byte[]> pdfFiles) throws IOException {
-        logger.debug("Creating ZIP file from {} PDF files", pdfFiles.size());
+        logger.info("Creating ZIP file from {} PDF files", pdfFiles.size());
 
         try (ByteArrayOutputStream zipOutputStream = new ByteArrayOutputStream();
              ZipOutputStream zip = new ZipOutputStream(zipOutputStream)) {
@@ -614,7 +614,7 @@ public class PdfServiceImpl implements PdfService {
      * @return ZIP file as byte array
      */
     public byte[] createZipFromImages(List<byte[]> images, String format) throws IOException {
-        logger.debug("Creating ZIP file from {} image files", images.size());
+        logger.info("Creating ZIP file from {} image files", images.size());
 
         try (ByteArrayOutputStream zipOutputStream = new ByteArrayOutputStream();
              ZipOutputStream zip = new ZipOutputStream(zipOutputStream)) {

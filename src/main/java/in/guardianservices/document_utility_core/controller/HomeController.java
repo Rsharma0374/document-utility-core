@@ -12,10 +12,7 @@ import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @RequestMapping("/doc-service")
@@ -31,9 +28,11 @@ public class HomeController {
 
     @GetMapping("/welcome")
     public String welcome() {
-        return "+-------------------------------------+\n" +
-                "|  Welcome to Document Utility!       |\n" +
-                "+-------------------------------------+\n";
+        return """
+                +-------------------------------------+
+                |  Welcome to Document Utility!       |
+                +-------------------------------------+
+                """;
     }
 
     @PostMapping("/pdf/unlock")
@@ -70,7 +69,7 @@ public class HomeController {
     public ResponseEntity<?> lockUnlockedPdf(@RequestParam("file") MultipartFile file,
                                              @RequestParam("password") String password) {
 
-        logger.debug("Attempting to lock unlocked PDF: {}", file.getOriginalFilename());
+        logger.info("Attempting to lock unlocked PDF: {}", file.getOriginalFilename());
 
         try {
             // Check if PDF is already locked
@@ -113,7 +112,7 @@ public class HomeController {
     @PostMapping("/pdf-to-base64")
     public ResponseEntity<?> convertPdfToBase64(@RequestParam("file") MultipartFile file) {
 
-        logger.debug("Attempting to convert pdf to base64: {}", file.getOriginalFilename());
+        logger.info("Attempting to convert pdf to base64: {}", file.getOriginalFilename());
 
         try {
             // Check if PDF is already locked
@@ -155,11 +154,11 @@ public class HomeController {
     @PostMapping("/base64-to-pdf")
     public ResponseEntity<?> convertBase64toPdf(@RequestParam("base64") String base64) {
 
-        logger.debug("Attempting to convert base64 to PDF, base64 length: {}", base64.length());
+        logger.info("Attempting to convert base64 to PDF, base64 length: {}", base64.length());
 
         try {
             // Validate base64 string
-            if (base64 == null || base64.trim().isEmpty()) {
+            if (base64.trim().isEmpty()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(Map.of("error", "Base64 string cannot be null or empty"));
             }
@@ -170,7 +169,7 @@ public class HomeController {
                 int commaIndex = base64.indexOf(',');
                 if (commaIndex != -1) {
                     cleanBase64 = base64.substring(commaIndex + 1);
-                    logger.debug("Removed data URL prefix from base64 string");
+                    logger.info("Removed data URL prefix from base64 string");
                 }
             }
 
@@ -194,7 +193,7 @@ public class HomeController {
             headers.setContentDisposition(ContentDisposition.attachment().filename(filename).build());
             headers.setContentLength(pdfBytes.length);
 
-            logger.debug("Successfully converted base64 to PDF. PDF size: {} bytes", pdfBytes.length);
+            logger.info("Successfully converted base64 to PDF. PDF size: {} bytes", pdfBytes.length);
 
             return ResponseEntity.ok()
                     .headers(headers)
@@ -217,7 +216,7 @@ public class HomeController {
     public ResponseEntity<?> compressPdf(@RequestParam("file") MultipartFile file,
                                          @RequestParam(value = "quality", defaultValue = "0.8") float quality) {
 
-        logger.debug("Attempting to compress PDF: {}, quality: {}", file.getOriginalFilename(), quality);
+        logger.info("Attempting to compress PDF: {}, quality: {}", file.getOriginalFilename(), quality);
 
         try {
             // Validate file
@@ -244,7 +243,7 @@ public class HomeController {
             long compressedSize = compressedPdf.length;
             double compressionRatio = ((double)(originalSize - compressedSize) / originalSize) * 100;
 
-            logger.debug("PDF compression successful. Compression ratio: {:.2f}%", compressionRatio);
+            logger.info("PDF compression successful. Compression ratio: {}", compressionRatio);
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=compressed_" + file.getOriginalFilename())
@@ -266,15 +265,15 @@ public class HomeController {
         }
     }
 
-    // 5. PDF MERGE
+    // PDF MERGE
     @PostMapping("/pdf/merge")
     public ResponseEntity<?> mergePdfs(@RequestParam("files") List<MultipartFile> files) {
 
-        logger.debug("Attempting to merge {} PDF files", files.size());
+        logger.info("Attempting to merge {} PDF files", files.size());
 
         try {
             // Validate files
-            if (files == null || files.isEmpty()) {
+            if (files.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(Map.of("error", "No files provided"));
             }
@@ -299,7 +298,7 @@ public class HomeController {
 
             byte[] mergedPdf = pdfService.mergePdfs(files);
 
-            logger.debug("PDF merge successful. Total merged files: {}", files.size());
+            logger.info("PDF merge successful. Total merged files: {}", files.size());
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=merged_" + System.currentTimeMillis() + ".pdf")
@@ -319,12 +318,12 @@ public class HomeController {
         }
     }
 
-    // 6. PDF SPLIT
+    // PDF SPLIT
     @PostMapping("/pdf/split")
     public ResponseEntity<?> splitPdf(@RequestParam("file") MultipartFile file,
                                       @RequestParam("pages") String pageRanges) {
 
-        logger.debug("Attempting to split PDF: {}, page ranges: {}", file.getOriginalFilename(), pageRanges);
+        logger.info("Attempting to split PDF: {}, page ranges: {}", file.getOriginalFilename(), pageRanges);
 
         try {
             // Validate file
@@ -354,11 +353,11 @@ public class HomeController {
             // Return as ZIP file containing multiple PDFs
             byte[] zipFile = pdfService.createZipFromPdfs(splitPdfs);
 
-            logger.debug("PDF split successful. Generated {} split files", splitPdfs.size());
+            logger.info("PDF split successful. Generated {} split files", splitPdfs.size());
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=split_" +
-                            file.getOriginalFilename().replace(".pdf", "") + "_pages.zip")
+                            Objects.requireNonNull(file.getOriginalFilename()).replace(".pdf", "") + "_pages.zip")
                     .header("Access-Control-Expose-Headers", "Content-Disposition")
                     .header("X-Split-Files-Count", String.valueOf(splitPdfs.size()))
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
@@ -375,13 +374,13 @@ public class HomeController {
         }
     }
 
-    // 7. PDF TO IMAGE CONVERSION
+    // PDF TO IMAGE CONVERSION
     @PostMapping("/pdf/to-images")
     public ResponseEntity<?> convertPdfToImages(@RequestParam("file") MultipartFile file,
                                                 @RequestParam(value = "format", defaultValue = "PNG") String format,
                                                 @RequestParam(value = "dpi", defaultValue = "300") int dpi) {
 
-        logger.debug("Attempting to convert PDF to images: {}, format: {}, DPI: {}",
+        logger.info("Attempting to convert PDF to images: {}, format: {}, DPI: {}",
                 file.getOriginalFilename(), format, dpi);
 
         try {
@@ -417,11 +416,11 @@ public class HomeController {
 
             byte[] zipFile = pdfService.createZipFromImages(images, format);
 
-            logger.debug("PDF to image conversion successful. Generated {} images", images.size());
+            logger.info("PDF to image conversion successful. Generated {} images", images.size());
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" +
-                            file.getOriginalFilename().replace(".pdf", "") + "_images.zip")
+                            Objects.requireNonNull(file.getOriginalFilename()).replace(".pdf", "") + "_images.zip")
                     .header("Access-Control-Expose-Headers", "Content-Disposition")
                     .header("X-Images-Count", String.valueOf(images.size()))
                     .header("X-Image-Format", format.toUpperCase())

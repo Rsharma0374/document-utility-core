@@ -19,10 +19,14 @@ public class RateLimiterFilter implements Filter {
 
     private Bandwidth getBandwidthForEndpoint(String endpoint) {
         return switch (endpoint) {
-            case "/api/v1/pdf/unlock" -> Bandwidth.classic(5, Refill.greedy(5, Duration.ofMinutes(1)));
-            case "/api/v1/pdf/lock" -> Bandwidth.classic(5, Refill.greedy(5, Duration.ofMinutes(1)));
-            case "/api/v1/pdf/to-doc" -> Bandwidth.classic(5, Refill.greedy(5, Duration.ofMinutes(1)));
-            case "/api/v1/doc/to-pdf" -> Bandwidth.classic(5, Refill.greedy(5, Duration.ofMinutes(1)));
+            case "/doc-service/pdf/unlock" -> Bandwidth.classic(5, Refill.greedy(5, Duration.ofMinutes(1)));
+            case "/doc-service/pdf/lock" -> Bandwidth.classic(5, Refill.greedy(5, Duration.ofMinutes(1)));
+            case "/doc-service/pdf-to-base64" -> Bandwidth.classic(5, Refill.greedy(5, Duration.ofMinutes(1)));
+            case "/doc-service/base64-to-pdf" -> Bandwidth.classic(5, Refill.greedy(5, Duration.ofMinutes(1)));
+            case "/doc-service/pdf/compress" -> Bandwidth.classic(5, Refill.greedy(5, Duration.ofMinutes(1)));
+            case "/doc-service/pdf/merge" -> Bandwidth.classic(5, Refill.greedy(5, Duration.ofMinutes(1)));
+            case "/doc-service/pdf/split" -> Bandwidth.classic(5, Refill.greedy(5, Duration.ofMinutes(1)));
+            case "/doc-service/pdf/to-images" -> Bandwidth.classic(5, Refill.greedy(5, Duration.ofMinutes(1)));
             default -> Bandwidth.classic(10, Refill.greedy(10, Duration.ofMinutes(1)));
         };
     }
