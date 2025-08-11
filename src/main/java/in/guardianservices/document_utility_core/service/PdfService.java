@@ -26,4 +26,6 @@ public interface PdfService {
     List<byte[]> convertPdfToImages(MultipartFile file, String format, int dpi) throws IOException;
 
     byte[] createZipFromImages(List<byte[]> images, String format) throws IOException;
+
+    List<String> convert(String filePath) throws IOException;
 }

@@ -29,10 +29,13 @@ import javax.imageio.stream.ImageOutputStream;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -632,5 +635,43 @@ public class PdfServiceImpl implements PdfService {
         }
     }
 
+
+    public List<String> convert(String filePath) throws IOException {
+        String format = "png";  // You can pass this as a parameter if needed
+        int dpi = 200;          // You can make this configurable too
+
+        File inputFile = new File(filePath);
+        if (!inputFile.exists()) {
+            throw new FileNotFoundException("PDF file not found at path: " + filePath);
+        }
+
+        String outputDir = "/tmp/pdf-images/" + UUID.randomUUID(); // unique output folder
+        File dir = new File(outputDir);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+
+        List<String> imagePaths = new ArrayList<>();
+
+        try (PDDocument document = PDDocument.load(inputFile)) {
+            PDFRenderer renderer = new PDFRenderer(document);
+            int pageCount = document.getNumberOfPages();
+
+            for (int i = 0; i < pageCount; i++) {
+                BufferedImage image = renderer.renderImageWithDPI(i, dpi, ImageType.RGB);
+                String imageFilePath = String.format("%s/page-%d.%s", outputDir, i + 1, format);
+                File imageFile = new File(imageFilePath);
+
+                boolean written = ImageIO.write(image, format, imageFile);
+                if (!written) {
+                    throw new IOException("Failed to write image for page " + (i + 1));
+                }
+
+                imagePaths.add(imageFile.getAbsolutePath());
+            }
+        }
+
+        return imagePaths;
+    }
 }
 
