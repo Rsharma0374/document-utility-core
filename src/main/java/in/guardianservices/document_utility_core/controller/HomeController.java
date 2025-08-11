@@ -453,7 +453,7 @@ public class HomeController {
     public ResponseEntity<?> upload(@RequestParam MultipartFile file) throws IOException {
         String requestId = UUID.randomUUID().toString();
         String path = storageService.save(file, requestId);
-        kafkaProducer.sendPdfRequest(new PdfRequest(requestId, path));
+//        kafkaProducer.sendPdfRequest(new PdfRequest(requestId, path));
         return ResponseEntity.ok(Map.of("requestId", requestId));
     }
 
