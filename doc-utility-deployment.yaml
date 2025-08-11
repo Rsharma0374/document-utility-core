@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: doc-utility-service
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: doc-utility-service
+  template:
+    metadata:
+      labels:
+        app: doc-utility-service
+    spec:
+      containers:
+        - name: doc-utility-service
+          image: rsharma0374/doc-utility-service:latest
+          ports:
+            - containerPort: 10020
+          volumeMounts:
+            - name: infisical-secret-volume
+              mountPath: /opt/configs/infisical.properties
+              subPath: infisical.properties
+              readOnly: true
+      volumes:
+        - name: infisical-secret-volume
+          secret:
+            secretName: infisical-secret
+            items:
+              - key: infisical.properties
+                path: infisical.properties
