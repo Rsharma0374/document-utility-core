@@ -7,7 +7,7 @@ import in.guardianservices.document_utility_core.service.DocService;
 import in.guardianservices.document_utility_core.service.PdfService;
 import in.guardianservices.document_utility_core.service.PdfStorageService;
 import in.guardianservices.document_utility_core.utils.FileUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
