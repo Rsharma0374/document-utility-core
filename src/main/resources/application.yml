@@ -1,7 +1,7 @@
 # Server configuration
 
 server:
-  port: 10020
+  port: 10005
   servlet:
     context-path: /doc-service
 
