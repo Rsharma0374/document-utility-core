@@ -3,7 +3,7 @@
 server:
   port: 10020
   servlet:
-    context-path: doc-service
+    context-path: /doc-service
 
 spring:
   application:
