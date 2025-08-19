@@ -36,7 +36,7 @@ WORKDIR /app
 COPY --from=build --chown=spring:spring /app/target/*.jar doc-utility.jar
 
 # Application port
-EXPOSE 10020
+EXPOSE 10005
 
 # Run app
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar doc-utility.jar"]

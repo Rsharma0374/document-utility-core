@@ -2,6 +2,8 @@
 
 server:
   port: 10020
+  servlet:
+    context-path: doc-service
 
 spring:
   application:
@@ -20,12 +22,3 @@ spring:
 logging:
   level:
     root: info
-
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
-  instance:
-    prefer-ip-address: true
-
-

@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.util.*;
 
 @RestController
-@RequestMapping("/doc-service")
+@RequestMapping("/pdf")
 public class HomeController {
 
     private static final Logger logger = LoggerFactory.getLogger(HomeController.class);
@@ -45,7 +45,7 @@ public class HomeController {
                 """;
     }
 
-    @PostMapping("/pdf/unlock")
+    @PostMapping("/unlock")
     public ResponseEntity<?> unlockPdf(@RequestParam("file") MultipartFile file,
                                        @RequestParam("password") String password) {
 
@@ -75,7 +75,7 @@ public class HomeController {
         }
     }
 
-    @PostMapping("/pdf/lock")
+    @PostMapping("/lock")
     public ResponseEntity<?> lockUnlockedPdf(@RequestParam("file") MultipartFile file,
                                              @RequestParam("password") String password) {
 
@@ -222,7 +222,7 @@ public class HomeController {
 
 
     // PDF COMPRESSION
-    @PostMapping("/pdf/compress")
+    @PostMapping("/compress")
     public ResponseEntity<?> compressPdf(@RequestParam("file") MultipartFile file,
                                          @RequestParam(value = "quality", defaultValue = "0.8") float quality) {
 
@@ -276,7 +276,7 @@ public class HomeController {
     }
 
     // PDF MERGE
-    @PostMapping("/pdf/merge")
+    @PostMapping("/merge")
     public ResponseEntity<?> mergePdfs(@RequestParam("files") List<MultipartFile> files) {
 
         logger.info("Attempting to merge {} PDF files", files.size());
@@ -329,7 +329,7 @@ public class HomeController {
     }
 
     // PDF SPLIT
-    @PostMapping("/pdf/split")
+    @PostMapping("/split")
     public ResponseEntity<?> splitPdf(@RequestParam("file") MultipartFile file,
                                       @RequestParam("pages") String pageRanges) {
 
@@ -385,7 +385,7 @@ public class HomeController {
     }
 
     // PDF TO IMAGE CONVERSION
-    @PostMapping("/pdf/to-images")
+    @PostMapping("/to-images")
     public ResponseEntity<?> convertPdfToImages(@RequestParam("file") MultipartFile file,
                                                 @RequestParam(value = "format", defaultValue = "PNG") String format,
                                                 @RequestParam(value = "dpi", defaultValue = "300") int dpi) {
@@ -449,7 +449,7 @@ public class HomeController {
         }
     }
 
-    @PostMapping("/pdf/to-images/async")
+    @PostMapping("/to-images/async")
     public ResponseEntity<?> upload(@RequestParam MultipartFile file) throws IOException {
         String requestId = UUID.randomUUID().toString();
         String path = storageService.save(file, requestId);

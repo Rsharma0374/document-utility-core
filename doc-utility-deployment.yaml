@@ -16,7 +16,7 @@ spec:
         - name: doc-utility-service
           image: rsharma0374/doc-utility-service:latest
           ports:
-            - containerPort: 10020
+            - containerPort: 10005
           volumeMounts:
             - name: infisical-secret-volume
               mountPath: /opt/configs/infisical.properties

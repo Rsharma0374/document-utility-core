@@ -8,6 +8,6 @@ spec:
     app: doc-utility-service
   ports:
     - protocol: TCP
-      port: 10020
-      targetPort: 10020
-      nodePort: 30020
+      port: 10005
+      targetPort: 10005
+      nodePort: 30005
