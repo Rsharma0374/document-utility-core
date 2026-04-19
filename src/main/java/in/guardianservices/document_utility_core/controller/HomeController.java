@@ -1,13 +1,12 @@
 package in.guardianservices.document_utility_core.controller;
 
 import in.guardianservices.document_utility_core.exception.InvalidPasswordException;
-import in.guardianservices.document_utility_core.messaging.KafkaProducer;
 import in.guardianservices.document_utility_core.model.PdfRequest;
 import in.guardianservices.document_utility_core.service.DocService;
 import in.guardianservices.document_utility_core.service.PdfService;
 import in.guardianservices.document_utility_core.service.PdfStorageService;
 import in.guardianservices.document_utility_core.utils.FileUtils;
-import org.apache.commons.lang.StringUtils;
+import io.micrometer.common.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,9 +28,6 @@ public class HomeController {
 
     @Autowired
     private PdfStorageService storageService;
-
-    @Autowired
-    private KafkaProducer kafkaProducer;
 
     @Autowired
     private DocService docService;
@@ -448,13 +444,13 @@ public class HomeController {
                     .body(Map.of("error", "Failed to convert PDF to images"));
         }
     }
-
-    @PostMapping("/pdf/to-images/async")
-    public ResponseEntity<?> upload(@RequestParam MultipartFile file) throws IOException {
-        String requestId = UUID.randomUUID().toString();
-        String path = storageService.save(file, requestId);
-        kafkaProducer.sendPdfRequest(new PdfRequest(requestId, path));
-        return ResponseEntity.ok(Map.of("requestId", requestId));
-    }
+//
+//    @PostMapping("/pdf/to-images/async")
+//    public ResponseEntity<?> upload(@RequestParam MultipartFile file) throws IOException {
+//        String requestId = UUID.randomUUID().toString();
+//        String path = storageService.save(file, requestId);
+//        kafkaProducer.sendPdfRequest(new PdfRequest(requestId, path));
+//        return ResponseEntity.ok(Map.of("requestId", requestId));
+//    }
 
 }

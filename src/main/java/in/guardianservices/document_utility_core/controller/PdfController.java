@@ -1,6 +1,4 @@
 package in.guardianservices.document_utility_core.controller;
-
-import in.guardianservices.document_utility_core.messaging.KafkaProducer;
 import in.guardianservices.document_utility_core.model.PdfRequest;
 import in.guardianservices.document_utility_core.service.PdfStorageService;
 import org.springframework.beans.factory.annotation.Autowired;
