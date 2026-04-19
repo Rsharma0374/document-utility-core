@@ -1,14 +1,31 @@
 package in.guardianservices.document_utility_core.model;
 
-import lombok.*;
-
-@Data
-@ToString
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class PdfRequest {
 
     private String requestId;
-    private String filePath;
+    private String path;
+
+    public PdfRequest() {
+    }
+
+    public PdfRequest(String requestId, String path) {
+        this.requestId = requestId;
+        this.path = path;
+    }
+
+    public String getRequestId() {
+        return requestId;
+    }
+
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
 }
