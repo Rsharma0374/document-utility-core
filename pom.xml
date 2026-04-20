@@ -29,6 +29,12 @@
 	<properties>
 		<java.version>21</java.version>
 	</properties>
+	<repositories>
+		<repository>
+			<id>jitpack.io</id>
+			<url>https://jitpack.io</url>
+		</repository>
+	</repositories>
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
@@ -63,6 +69,12 @@
 			<version>2.0.30</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.apache.kafka</groupId>
+			<artifactId>kafka-clients</artifactId>
+			<version>3.6.1</version>
+		</dependency>
+
 		<!-- If using Consul -->
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
@@ -72,6 +84,13 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.github.Rsharma0374</groupId>
+			<artifactId>log-monitor-sdk</artifactId>
+			<version>v2026.0.5</version>
+
 		</dependency>
 	</dependencies>
 

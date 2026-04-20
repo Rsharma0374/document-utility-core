@@ -1,0 +1,19 @@
+<configuration>
+    <appender name="AI_KAFKA_LOG" class="in.guardianservices.log_monitor_sdk.analyzer.KafkaAiLogAppender">
+<!--        <bootstrapServers>152.67.3.253:9092</bootstrapServers>-->
+        <bootstrapServers>localhost:9092</bootstrapServers>
+
+        <topic>logging.analytics.raw-errors.v1</topic>
+    </appender>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="AI_KAFKA_LOG" />
+    </root>
+</configuration>
