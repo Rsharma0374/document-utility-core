@@ -1,0 +1,26 @@
+# Server configuration
+
+server:
+  port: 10005
+
+spring:
+  application:
+    name: document-service
+  cloud:
+    consul:
+      host: consul.guardianservices.in
+      port: 8500
+      discovery:
+        register: true
+        health-check-path: /actuator/health
+        health-check-interval: 10s
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+logging:
+  level:
+    root: info
+
+
