@@ -14,7 +14,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.*;
 
 @RestController
-@RequestMapping("/doc-service")
 public class HomeController {
 
     private static final Logger logger = LoggerFactory.getLogger(HomeController.class);

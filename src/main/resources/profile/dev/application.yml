@@ -2,18 +2,18 @@
 
 server:
   port: 10005
+  servlet:
+    context-path: /doc-service
 
 spring:
   application:
-    name: document-service
-  cloud:
-    consul:
-      host: localhost
-      port: 8500
-      discovery:
-        register: true
-        health-check-path: /actuator/health
-        health-check-interval: 10s
+    name: doc-service
+  profiles:
+    active: dev
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka.guardianservices.in:8761/eureka/
 management:
   endpoints:
     web:

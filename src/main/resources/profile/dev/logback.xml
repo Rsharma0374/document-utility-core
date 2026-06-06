@@ -1,9 +1,14 @@
 <configuration>
+    <springProperty scope="context" name="appName" source="spring.application.name" defaultValue="unknown-service"/>
+
+    <springProperty scope="context" name="activeProfile" source="spring.profiles.active" defaultValue="default"/>
     <appender name="AI_KAFKA_LOG" class="in.guardianservices.log_monitor_sdk.analyzer.KafkaAiLogAppender">
 <!--        <bootstrapServers>152.67.3.253:9092</bootstrapServers>-->
         <bootstrapServers>localhost:9092</bootstrapServers>
 
         <topic>logging.analytics.raw-errors.v1</topic>
+        <serviceName>${appName}</serviceName>
+        <environment>${activeProfile}</environment>
     </appender>
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
