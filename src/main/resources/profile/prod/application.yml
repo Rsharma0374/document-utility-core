@@ -8,6 +8,8 @@ server:
 spring:
   application:
     name: doc-service
+  profiles:
+    active: prod
 eureka:
   client:
     service-url:
@@ -15,7 +17,8 @@ eureka:
     fetch-registry: true
     register-with-eureka: true
   instance:
-    prefer-ip-address: true
+    prefer-ip-address: false
+    hostname: 80.225.218.113
     instance-id: ${spring.application.name}:${server.port}
 management:
   endpoints:
