@@ -22,7 +22,7 @@ eureka:
     register-with-eureka: true
   instance:
     prefer-ip-address: false
-    hostname: 80.225.218.113
+    hostname: ${HOSTNAME:localhost}
     instance-id: ${spring.application.name}:${server.port}
 management:
   endpoints:
