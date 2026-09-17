@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.5.11</version>
+		<version>4.0.8</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>in.guardianservices</groupId>
@@ -37,7 +37,8 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 		<!-- Dependency Versions (not managed by Spring Boot BOM) -->
-		<spring-cloud.version>2025.0.1</spring-cloud.version>
+		<spring-cloud.version>2025.0.3</spring-cloud.version>
+		<tomcat.version>11.0.25</tomcat.version>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
@@ -47,6 +48,16 @@
 				<version>${spring-cloud.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.httpcomponents.client5</groupId>
+				<artifactId>httpclient5</artifactId>
+				<version>5.6.3</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.httpcomponents.core5</groupId>
+				<artifactId>httpcore5</artifactId>
+				<version>5.4.3</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -63,19 +74,14 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
-		</dependency>
-
-		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>pdfbox</artifactId>
-			<version>2.0.34</version>
+			<version>2.0.37</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>pdfbox-tools</artifactId>
-			<version>2.0.34</version>
+			<version>2.0.37</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.bouncycastle</groupId>

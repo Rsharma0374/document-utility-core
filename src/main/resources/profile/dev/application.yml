@@ -10,15 +10,7 @@ spring:
     name: doc-service
   profiles:
     active: dev
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost.in:8761/eureka/
-    fetch-registry: true
-    register-with-eureka: true
-  instance:
-    prefer-ip-address: true
-    instance-id: ${spring.application.name}:${server.port}
+
 management:
   endpoints:
     web:

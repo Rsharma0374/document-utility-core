@@ -14,16 +14,7 @@ spring:
     multipart:
       max-file-size: 20MB
       max-request-size: 20MB
-eureka:
-  client:
-    service-url:
-      defaultZone: http://eureka.guardianservices.in:8761/eureka/
-    fetch-registry: true
-    register-with-eureka: true
-  instance:
-    prefer-ip-address: false
-    hostname: ${HOSTNAME:localhost}
-    instance-id: ${spring.application.name}:${server.port}
+
 management:
   endpoints:
     web:
